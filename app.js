@@ -1,4 +1,4 @@
-/* WatchUFC: UFC (default home) + PFL, Bellator MMA and Invicta FC hubs. Each hub: home rails, events, years, type hubs, search, in-page player, Continue Watching.
+/* WatchUFC: UFC (default home) + PFL, Bellator MMA, Invicta FC and Power Slap hubs. Each hub: home rails, events, years, type hubs, search, in-page player, Continue Watching.
    UFC data is inlined (#data, short keys). Hub catalogs are separate JSON files fetched lazily the first time a hub opens (keeps the iPhone page slim). */
 (function () {
   "use strict";
@@ -46,14 +46,23 @@
       kinds: { num: "Numbered Event", phoenix: "Phoenix Series", special: "Special Event" },
       lists: [{ id: "phoenix", chip: "Phoenix Series & Specials", title: "Phoenix <em>Series</em>", sub: "Invicta's Phoenix Series, Phoenix Tournament and special cards", ks: ["phoenix", "special"] }],
       railNum: "Numbered Events", railList: "Phoenix Series", search: "Invicta fighters, events, years…", searchEx: "an event like “Invicta FC 50”",
-      foot: "WatchUFC's Invicta FC hub is a personal index of videos Invicta Fighting Championships publishes on its official YouTube channel. Videos play from YouTube. Not affiliated with or endorsed by Invicta FC." }
+      foot: "WatchUFC's Invicta FC hub is a personal index of videos Invicta Fighting Championships publishes on its official YouTube channel. Videos play from YouTube. Not affiliated with or endorsed by Invicta FC." },
+    powerslap: { key: "powerslap", name: "Power Slap", numP: "Power Slap", numbered: true, hero: "powerslap_hero.jpg", logo: "logo-powerslap.png", cw: "ufc_cw_powerslap", file: "powerslap.json",
+      eyebrow: "Power. Technique. Resolve.", h1: "Step up to the <b>Table</b>", cage: "at the Power Slap table", ff: "Full Matches",
+      tn: { F: "Full Match", E: "Full Event / Episode", D: "All Access & Docs" }, tpl: { F: "Full Matches & Free Matches", E: "Full Events & Episodes", D: "All Access, Origins & Docs" },
+      pitch: "Every official Power Slap upload on YouTube: every numbered card from Power Slap 1, Road to the Title, full matches, press conferences, weigh-ins and faceoffs.",
+      kinds: { num: "Numbered Event", rtt: "Road to the Title" },
+      lists: [{ id: "rtt", chip: "Road to the Title", title: "Road to the <em>Title</em>", sub: "Power Slap's reality series: Season 1 on TBS (2023), Seasons 2 and 3 on Rumble", ks: ["rtt"] }],
+      railNum: "Numbered Events", railList: "Road to the Title", search: "Power Slap strikers, events, years…", searchEx: "an event like “Power Slap 12”",
+      foot: "WatchUFC's Power Slap hub is a personal index of videos Power Slap publishes on its official YouTube channel (@powerslap). Videos play from YouTube. Not affiliated with or endorsed by Power Slap." }
   };
-  var HORDER = ["ufc", "pfl", "bellator", "invicta"];
+  var HORDER = ["ufc", "pfl", "bellator", "invicta", "powerslap"];
   var HUB = HUBS.ufc, CACHE = {}, ACTIVE = "";
 
   /* ---------- data model (swapped per hub) ---------- */
   var CHN, E, V, GEN, BYNUM, MAXNUM, byType, YEARS, IDX, QI;
   var TODAY = new Date().toISOString().slice(0, 10);
+  var ALTLANG = /^\W*(arabic|french|hindi|russian|serbian|spanish|portuguese|chinese|german|italian|turkish|japanese|korean|indonesian) stream\b|subtitles|\bchoques?\b|\blutas?\b|trilog[ií]a|confronto|t[ií]tulo|[\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u3040-\u30ff\u4e00-\u9fff]/i; // Power Slap's foreign-language feeds go after the English one
   function newest(a, b) { return b.u - a.u || a.i - b.i; }
   function oldest(a, b) { return (a.y || 9999) - (b.y || 9999) || a.u - b.u || a.i - b.i; }
   function model(raw) {
@@ -66,6 +75,7 @@
     m.E.forEach(function (e) { if (e.num) { m.BYNUM[e.num] = e; if (e.d && e.d <= TODAY && e.num > m.MAXNUM) m.MAXNUM = e.num; } });
     m.byType = {}; TORDER.forEach(function (k) { m.byType[k] = []; });
     m.V.sort(newest); m.V.forEach(function (v, i) { v.i = i; (m.byType[v.ty] || m.byType.O).push(v); });
+    m.E.forEach(function (e) { e.v.sort(function (a, b) { return (ALTLANG.test(a.t) ? 1 : 0) - (ALTLANG.test(b.t) ? 1 : 0) || a.i - b.i; }); });
     m.YEARS = {}; m.V.forEach(function (v) { if (v.y) (m.YEARS[v.y] = m.YEARS[v.y] || []).push(v); });
     m.IDX = {}; m.V.forEach(function (v) { m.IDX[v.id] = v; });
     m.QI = null;
@@ -75,7 +85,9 @@
     var m = CACHE[key]; HUB = HUBS[key]; ACTIVE = key;
     CHN = m.CHN; E = m.E; V = m.V; GEN = m.GEN; BYNUM = m.BYNUM; MAXNUM = m.MAXNUM; byType = m.byType; YEARS = m.YEARS; IDX = m.IDX; QI = m.QI;
     doc.body.className = "hub-" + key;
-    var tc = doc.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute("content", { ufc: "#070707", pfl: "#050505", bellator: "#080606", invicta: "#0a0709" }[key]);
+    var tc = doc.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute("content", { ufc: "#070707", pfl: "#050505", bellator: "#080606", invicta: "#0a0709", powerslap: "#02030a" }[key]);
+    var T0 = { E: "Full Event", F: "Full Fight", D: "Embedded & Docs" }, P0 = { E: "Full Events", F: "Full Fights & Free Fights", D: "Embedded, Countdown & Docs" };
+    ["E", "F", "D"].forEach(function (k) { TN[k] = (HUB.tn && HUB.tn[k]) || T0[k]; }); ["E", "F", "D"].forEach(function (k) { TPL[k] = (HUB.tpl && HUB.tpl[k]) || P0[k]; });
     doc.title = key === "ufc" ? "WatchUFC" : "WatchUFC · " + HUB.name;
     var ht = doc.getElementById("hubtag");
     ht.innerHTML = HUB.logo ? '<img src="' + HUB.logo + '" alt="' + HUB.name + '" />' : ""; ht.hidden = !HUB.logo;
@@ -89,7 +101,7 @@
   function fixLinks(root) {
     if (HUB.key === "ufc" || !root) return;
     [].forEach.call(root.querySelectorAll('a[href^="#"]'), function (a) {
-      var h = a.getAttribute("href"); if (a.hasAttribute("data-hub") || /^#(pfl|bellator|invicta|live)\b/.test(h)) return;
+      var h = a.getAttribute("href"); if (a.hasAttribute("data-hub") || /^#(pfl|bellator|invicta|powerslap|live)\b/.test(h)) return;
       a.setAttribute("href", L(h));
     });
   }
@@ -106,6 +118,7 @@
     var m;
     if (HUB.key === "ufc") { m = e.n.match(/^UFC (\d+)(?::\s*(.+))?$/); return m ? { a: "UFC " + m[1], b: m[2] || "" } : { a: e.n.replace(/^UFC Fight Night:\s*/, "Fight Night: "), b: "" }; }
     if (e.num) { m = e.n.match(new RegExp("^" + reEsc(HUB.numP) + " (\\d+)(?::\\s*(.+))?$")); return m ? { a: HUB.numP + " " + m[1], b: m[2] || "" } : { a: e.n, b: "" }; }
+    m = e.n.match(/^Power Slap: (Road to the Title) Season (\d)$/); if (m) return { a: m[1] + " S" + m[2], b: "Season " + m[2] + (e.loc ? " · " + e.loc : "") };
     m = e.n.match(/^(\d{4}) (PFL(?: Europe| MENA| Africa)? \d+)$/); if (m) return { a: m[2], b: m[1] + " " + (HUB.kinds[e.k] || "") };
     m = e.n.match(/^WSOF ?(\d+):\s*(.+)$/); if (m) return { a: "WSOF " + m[1], b: m[2] };
     m = e.n.match(/^([^:]+):\s*(.+)$/); if (m) return { a: m[1], b: m[2] };
@@ -116,6 +129,7 @@
     var m = e.n.match(/^(\d{4}) PFL((?: Europe| MENA| Africa)?) (\d+)$/); if (m) return ["PFL" + m[2] + " · " + m[1], m[3]];
     m = e.n.match(/^(?:PFL|Bellator) Champions Series (\d+)$/); if (m) return ["Champions Series", m[1]];
     m = e.n.match(/^Phoenix Series (\d+)$/); if (m) return ["Phoenix Series", m[1]];
+    m = e.n.match(/^Power Slap: Road to the Title Season (\d)$/); if (m) return ["Road to the Title", "S" + m[1]];
     m = e.n.match(/^WSOF ?(\d+)\b/); if (m) return ["WSOF", m[1]];
     return null;
   }
@@ -138,7 +152,7 @@
     if (!o.noEv && e) meta.push(evShort(e).a);
     meta.push(TN[v.ty]);
     if (v.y && !o.noYear) meta.push(v.y);
-    var tag = v.ty === "E" ? '<span class="tag">Full Event</span>' : v.ty === "F" ? '<span class="tag tag--gold">Full Fight</span>' : "";
+    var tag = v.ty === "E" ? '<span class="tag">' + (HUB.key === "powerslap" && /road to the title|camino al/i.test(v.t) ? "Full Episode" : "Full Event") + "</span>" : v.ty === "F" ? '<span class="tag tag--gold">' + TN.F + "</span>" : "";
     return '<button class="card' + (o.playing ? " is-playing" : "") + '" type="button" data-cx="' + cx + '" data-pos="' + pos + '" aria-label="' + esc("Play " + v.t + ", " + hm(v.m)) + '">' +
       '<span class="thumb"><img src="' + thumb(v.id) + '" alt="" loading="lazy" decoding="async" />' + (o.pin ? '<span class="tag tag--dark">' + esc(o.pin) + "</span>" : tag) +
       '<span class="dur">' + hm(v.m) + "</span></span><b>" + esc(v.t) + "</b><small>" + esc(meta.join(" · ")) + "</small></button>";
@@ -289,16 +303,17 @@
       (HUB.logo ? '<img class="hero__logo" src="' + HUB.logo + '" alt="' + esc(HUB.name) + '" />' : "") +
       '<span class="eyebrow">' + esc(HUB.eyebrow) + "</span><h1>" + HUB.h1 + "</h1>" +
       "<p>" + esc(HUB.pitch) + "</p>" +
-      '<div class="stats"><span class="stat"><b>' + n(V.length) + "</b> videos</span><span class=\"stat\"><b>" + n(byType.F.length) + "</b> full fights</span><span class=\"stat\"><b>" + n(nEv) + "</b> events</span><span class=\"stat\">" + rangeStat() + "</span></div>" +
+      '<div class="stats"><span class="stat"><b>' + n(V.length) + "</b> videos</span><span class=\"stat\"><b>" + n(byType.F.length) + "</b> " + (HUB.ff || "full fights").toLowerCase() + "</span><span class=\"stat\"><b>" + n(nEv) + "</b> events</span><span class=\"stat\">" + rangeStat() + "</span></div>" +
       feat + '<div class="btns">' + (ln ? '<button class="btn btn--red" type="button" data-play-ev="' + ln.i + '">' + PLAY + " Watch " + esc(ln.num ? HUB.numP + " " + ln.num : evShort(ln).a) + "</button>" : "") +
       '<a class="btn btn--ghost" href="#events">' + (HUB.numbered ? "Browse events" : "Browse seasons") + "</a></div></div></div>";
     h += promoBar();
     h += cwRow();
     h += sec("Latest", rail(V.slice(0, 20)), "#t/all");
+    if (HUB.key === "powerslap") fe = fe.filter(function (v) { return !ALTLANG.test(v.t); });
     var feL = fe.filter(function (v) { return v.e >= 0; }).sort(function (a, b) { return (E[b.e].d || "") < (E[a.e].d || "") ? -1 : 1; });
     h += sec("Full Events", rail(feL.concat(fe.filter(function (v) { return v.e < 0; })).slice(0, 20)), "#t/E");
     var ff = HUB.key === "ufc" ? byType.F.filter(function (v) { return v.c <= 1 && /full fight|free fight/i.test(v.t); }) : byType.F;
-    h += sec("Free Fights", rail(ff.slice(0, 20)), "#t/F");
+    h += sec(HUB.ff || "Free Fights", rail(ff.slice(0, 20)), "#t/F");
     h += sec("Press Conferences", rail(byType.P.slice(0, 20)), "#t/P");
     if (HUB.numbered) {
       var nums = E.filter(function (e) { return e.num && e.v.length && past(e); }).sort(function (a, b) { return b.num - a.num; }).slice(0, 18);
@@ -426,6 +441,7 @@
     TORDER.forEach(function (t) {
       if (!g[t]) return;
       var L = g[t].slice().sort(t === "F" || t === "I" ? function (a, b) { return a.u - b.u || a.i - b.i; } : newest);
+      if (t === "E") L.sort(function (a, b) { return (ALTLANG.test(a.t) ? 1 : 0) - (ALTLANG.test(b.t) ? 1 : 0); }); // English feed before the dubbed ones (stable)
       h += '<section class="sec"><div class="shead"><h2 class="h2">' + esc(TPL[t]) + '</h2><span class="count"><b>' + L.length + "</b></span></div>" + (L.length > 8 ? '<div class="rail">' + cards(L, { noEv: true }) + "</div>" : '<div class="grid">' + cards(L, { noEv: true }) + "</div>") + "</section>";
     });
     main.innerHTML = '<div class="view">' + h + "</div>";
