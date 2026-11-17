@@ -54,9 +54,23 @@
       kinds: { num: "Numbered Event", rtt: "Road to the Title" },
       lists: [{ id: "rtt", chip: "Road to the Title", title: "Road to the <em>Title</em>", sub: "Power Slap's reality series: Season 1 on TBS (2023), Seasons 2 and 3 on Rumble", ks: ["rtt"] }],
       railNum: "Numbered Events", railList: "Road to the Title", search: "Power Slap strikers, events, years…", searchEx: "an event like “Power Slap 12”",
-      foot: "WatchUFC's Power Slap hub is a personal index of videos Power Slap publishes on its official YouTube channel (@powerslap). Videos play from YouTube. Not affiliated with or endorsed by Power Slap." }
+      foot: "WatchUFC's Power Slap hub is a personal index of videos Power Slap publishes on its official YouTube channel (@powerslap). Videos play from YouTube. Not affiliated with or endorsed by Power Slap." },
+    rizin: { key: "rizin", name: "RIZIN", numP: "RIZIN", numbered: true, hero: "rizin_hero.jpg", logo: "logo-rizin.png", cw: "ufc_cw_rizin", file: "rizin.json",
+      eyebrow: "超 · Japan's fight festival", h1: "This is <b>RIZIN</b>", cage: "in the RIZIN ring",
+      pitch: "Every official RIZIN FIGHTING FEDERATION upload on YouTube: hundreds of full fights from RIZIN.1 to RIZIN.55, Super RIZIN, LANDMARK and the New Year's Eve cards, plus press conferences, weigh-ins, faceoffs and post-fight interviews.",
+      kinds: { num: "Numbered Event", super: "Super RIZIN", landmark: "RIZIN LANDMARK", trigger: "RIZIN TRIGGER", gp: "World Grand Prix", special: "Special Event" },
+      lists: [{ id: "landmark", chip: "Super RIZIN, LANDMARK & Grand Prix", title: "Super RIZIN & <em>LANDMARK</em>", sub: "Super RIZIN, the LANDMARK series, TRIGGER, the World Grand Prix years and special cards", ks: ["super", "landmark", "trigger", "gp", "special"] }],
+      railNum: "Numbered Events", railList: "Super RIZIN & LANDMARK", search: "RIZIN fighters, events, years…", searchEx: "an event like “RIZIN.45”",
+      foot: "WatchUFC's RIZIN hub is a personal index of videos RIZIN FIGHTING FEDERATION publishes on its official YouTube channel (@RIZIN_FF). Videos play from YouTube. Some titles are in Japanese. Not affiliated with or endorsed by RIZIN." },
+    pride: { key: "pride", name: "PRIDE", numP: "PRIDE", numbered: true, hero: "pride_hero.jpg", logo: "logo-pride.png", cw: "ufc_cw_pride", file: "pride.json",
+      eyebrow: "PRIDE never die", h1: "The legend of <b>PRIDE</b>", cage: "in the PRIDE ring",
+      pitch: "PRIDE Fighting Championships as UFC and UFC FIGHT PASS publish it on their official YouTube channels: full event replays, full fights, Grand Prix nights, Bushido and Shockwave classics from 1997 to 2007.",
+      kinds: { num: "Numbered Event", gp: "Grand Prix", bushido: "Bushido", nye: "Shockwave & New Year's Eve", special: "Special Event" },
+      lists: [{ id: "gp", chip: "Grand Prix, Bushido & Shockwave", title: "Grand Prix, <em>Bushido</em> & Shockwave", sub: "Final Conflict, Total Elimination, Critical Countdown, Bushido and the New Year's Eve cards", ks: ["gp", "bushido", "nye", "special"] }],
+      railNum: "Numbered Events", railList: "Grand Prix & Bushido", search: "PRIDE fighters, events, years…", searchEx: "an event like “PRIDE 33”",
+      foot: "WatchUFC's PRIDE hub is a personal index of PRIDE videos that UFC and UFC FIGHT PASS publish on their official YouTube channels (UFC owns the PRIDE library). Videos play from YouTube. Not affiliated with or endorsed by UFC." }
   };
-  var HORDER = ["ufc", "pfl", "bellator", "invicta", "powerslap"];
+  var HORDER = ["ufc", "pfl", "bellator", "invicta", "powerslap", "rizin", "pride"];
   var HUB = HUBS.ufc, CACHE = {}, ACTIVE = "";
 
   /* ---------- data model (swapped per hub) ---------- */
@@ -85,7 +99,7 @@
     var m = CACHE[key]; HUB = HUBS[key]; ACTIVE = key;
     CHN = m.CHN; E = m.E; V = m.V; GEN = m.GEN; BYNUM = m.BYNUM; MAXNUM = m.MAXNUM; byType = m.byType; YEARS = m.YEARS; IDX = m.IDX; QI = m.QI;
     doc.body.className = "hub-" + key;
-    var tc = doc.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute("content", { ufc: "#070707", pfl: "#050505", bellator: "#080606", invicta: "#0a0709", powerslap: "#02030a" }[key]);
+    var tc = doc.querySelector('meta[name="theme-color"]'); if (tc) tc.setAttribute("content", { ufc: "#070707", pfl: "#050505", bellator: "#080606", invicta: "#0a0709", powerslap: "#02030a", rizin: "#050505", pride: "#070303" }[key]);
     var T0 = { E: "Full Event", F: "Full Fight", D: "Embedded & Docs" }, P0 = { E: "Full Events", F: "Full Fights & Free Fights", D: "Embedded, Countdown & Docs" };
     ["E", "F", "D"].forEach(function (k) { TN[k] = (HUB.tn && HUB.tn[k]) || T0[k]; }); ["E", "F", "D"].forEach(function (k) { TPL[k] = (HUB.tpl && HUB.tpl[k]) || P0[k]; });
     doc.title = key === "ufc" ? "WatchUFC" : "WatchUFC · " + HUB.name;
@@ -101,7 +115,7 @@
   function fixLinks(root) {
     if (HUB.key === "ufc" || !root) return;
     [].forEach.call(root.querySelectorAll('a[href^="#"]'), function (a) {
-      var h = a.getAttribute("href"); if (a.hasAttribute("data-hub") || /^#(pfl|bellator|invicta|powerslap|live)\b/.test(h)) return;
+      var h = a.getAttribute("href"); if (a.hasAttribute("data-hub") || /^#(pfl|bellator|invicta|powerslap|rizin|pride|live)\b/.test(h)) return;
       a.setAttribute("href", L(h));
     });
   }
@@ -167,6 +181,7 @@
       '<span class="ev__meta">' + esc([e.d ? e.d.slice(0, 4) : "", e.v.length ? plural(e.v.length, "video") : "No uploads yet"].filter(Boolean).join(" · ")) + "</span></button>";
   }
   function sec(title, inner, moreHref, extra) {
+    if (!inner && !extra) return "";
     return '<section class="sec"><div class="shead"><h2 class="h2">' + esc(title) + "</h2>" + (moreHref ? '<a class="more" href="' + moreHref + '">See all</a>' : "") + "</div>" + (extra || "") + inner + "</section>";
   }
   function rail(list, o) { return list.length ? '<div class="rail">' + cards(list, o) + "</div>" : ""; }
