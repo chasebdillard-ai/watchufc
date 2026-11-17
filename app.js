@@ -311,6 +311,27 @@
     var ys = Object.keys(seasons()).sort(); return "Seasons <b>" + ys[0] + "–" + ys[ys.length - 1] + "</b>";
   }
   function seasons() { var s = {}; E.forEach(function (e) { if (["season", "playoff", "champ"].indexOf(e.k) >= 0 && past(e)) (s[e.d.slice(0, 4)] = s[e.d.slice(0, 4)] || []).push(e); }); return s; }
+  // EOTN: "Event of the Night" banner (WatchUFC Live channel 5)
+  function eotnNext() { var L = window.EOTN_EVENTS || [], t = Date.now() / 1000; for (var i = 0; i < L.length; i++) if (t < L[i][0] + L[i][3]) return L[i]; return null; }
+  function eotnText(e) {
+    var t = Date.now() / 1000, live = t >= e[0], day = "", tm = "9:00 PM ET";
+    try {
+      var f = function (x) { return new Date(x * 1000).toLocaleDateString("en-US", { timeZone: "America/New_York" }); };
+      tm = new Date(e[0] * 1000).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) + " ET";
+      day = f(e[0]) === f(t) ? "Tonight" : f(e[0]) === f(t + 86400) ? "Tomorrow" : new Date(e[0] * 1000).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" });
+    } catch (x) {}
+    return { live: live, when: live ? "\u25cf Live now" : day + " \u00b7 " + tm,
+      sub: live ? "On the air now on WatchUFC Live. Jump in where everyone else is." : day + " at " + tm + " on WatchUFC Live. One event, one night, everyone watching together.",
+      btn: live ? "Watch Live" : "Tune In" };
+  }
+  function eotnCard() {
+    var e = eotnNext(); if (!e) return "";
+    var x = eotnText(e), mr = "https://i.ytimg.com/vi/" + e[1] + "/maxresdefault.jpg", hq = "https://i.ytimg.com/vi/" + e[1] + "/hqdefault.jpg";
+    return '<button class="eotn' + (x.live ? " is-live" : "") + '" type="button" data-eotn="1" id="eotn-card"><img src="' + mr + '" onerror="this.onerror=null;this.src=\'' + hq + '\'" alt="" />' +
+      '<span class="eotn__in"><small>Event of the Night</small><strong>' + esc(e[2]) + '</strong><em data-eo="when">' + esc(x.when) + '</em><span data-eo="sub">' + esc(x.sub) + '</span><b data-eo="btn">' + PLAY + " " + x.btn + "</b></span></button>";
+  }
+  setInterval(function () { var c = doc.getElementById("eotn-card"), e = eotnNext(); if (!c) return; if (!e) { c.remove(); return; } var x = eotnText(e); c.classList.toggle("is-live", x.live); c.querySelector('[data-eo="when"]').textContent = x.when; c.querySelector('[data-eo="sub"]').textContent = x.sub; c.querySelector('[data-eo="btn"]').innerHTML = PLAY + " " + x.btn; }, 30000);
+  doc.addEventListener("click", function (ev) { var b = ev.target.closest && ev.target.closest("[data-eotn]"); if (!b) return; ev.preventDefault(); ev.stopImmediatePropagation(); if (window.__lvOpen) window.__lvOpen("eotn"); else { try { localStorage.setItem("live_ch_ufc", "eotn"); } catch (x) {} var lb = doc.getElementById("live-btn"); if (lb) lb.click(); } }, true);
   function homeView() {
     var h = "", ln = latestEvent(), fe = byType.E, nEv = E.filter(function (e) { return e.v.length; }).length;
     var feat = ln ? '<button class="feat" type="button" data-ev="' + ln.i + '"><small>' + (HUB.numbered ? "Latest numbered event" : "Latest event") + "</small><strong>" + esc(ln.n) + "</strong><span>" + esc(fdate(ln.d) + (ln.loc ? " · " + ln.loc : "") + " · " + plural(ln.v.length, "video")) + "</span></button>" : "";
@@ -321,6 +342,7 @@
       '<div class="stats"><span class="stat"><b>' + n(V.length) + "</b> videos</span><span class=\"stat\"><b>" + n(byType.F.length) + "</b> " + (HUB.ff || "full fights").toLowerCase() + "</span><span class=\"stat\"><b>" + n(nEv) + "</b> events</span><span class=\"stat\">" + rangeStat() + "</span></div>" +
       feat + '<div class="btns">' + (ln ? '<button class="btn btn--red" type="button" data-play-ev="' + ln.i + '">' + PLAY + " Watch " + esc(ln.num ? HUB.numP + " " + ln.num : evShort(ln).a) + "</button>" : "") +
       '<a class="btn btn--ghost" href="#events">' + (HUB.numbered ? "Browse events" : "Browse seasons") + "</a></div></div></div>";
+    h += eotnCard();
     h += promoBar();
     h += cwRow();
     h += sec("Latest", rail(V.slice(0, 20)), "#t/all");

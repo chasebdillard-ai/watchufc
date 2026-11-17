@@ -164,6 +164,17 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
 .hl{color:var(--gold2)}
 .chip,.more,.back,.season,.yr,.promo,.hubtag,.btn{text-decoration:none}
 .hero__logo{height:clamp(44px,11vw,72px);width:auto;max-width:72vw;object-fit:contain;justify-self:start;filter:drop-shadow(0 6px 22px #000)}
+.eotn{position:relative;display:block;width:100%;margin:14px 0 4px;padding:0;border:1px solid rgba(232,195,90,.45);border-radius:14px;overflow:hidden;background:#000;color:#fff;text-align:left;cursor:pointer;min-height:200px;isolation:isolate}
+.eotn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:.85}
+.eotn::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.6) 55%,rgba(0,0,0,.15) 100%),linear-gradient(0deg,rgba(0,0,0,.6),transparent 60%)}
+.eotn__in{display:flex;flex-direction:column;gap:6px;padding:18px 18px 16px;max-width:640px}
+.eotn small{font:800 13px/1 var(--cond);letter-spacing:.24em;text-transform:uppercase;color:#e8c35a}
+.eotn strong{font:400 clamp(28px,7vw,48px)/.95 var(--disp);text-transform:uppercase;letter-spacing:.01em;text-shadow:0 4px 20px #000}
+.eotn em{font:800 15px/1 var(--cond);font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--red);align-self:flex-start;padding:6px 9px;border-radius:4px}
+.eotn.is-live em{animation:pulse 1.4s infinite}
+.eotn span[data-eo="sub"]{color:#ffffffd0;font-size:14px;line-height:1.35}
+.eotn b{align-self:flex-start;margin-top:4px;display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 18px;border-radius:999px;background:#e8c35a;color:#000;font:800 15px/1 var(--cond);letter-spacing:.08em;text-transform:uppercase}
+.eotn b svg{width:14px;height:14px}
 .promos{display:grid;gap:10px}
 .promos__h{font:700 12px/1 var(--cond);letter-spacing:.22em;text-transform:uppercase;color:var(--dim2)}
 .promos__row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}@media(max-width:720px){.promos__row{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -305,6 +316,7 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<script>window.EOTN_EVENTS=[[1794967200, "tI-WbwoRY5I", "PRIDE FC 19: Bad Blood", 12509]];</script>
 </head>
 <body>
 <div class="app" id="top">
@@ -657,6 +669,27 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
     var ys = Object.keys(seasons()).sort(); return "Seasons <b>" + ys[0] + "–" + ys[ys.length - 1] + "</b>";
   }
   function seasons() { var s = {}; E.forEach(function (e) { if (["season", "playoff", "champ"].indexOf(e.k) >= 0 && past(e)) (s[e.d.slice(0, 4)] = s[e.d.slice(0, 4)] || []).push(e); }); return s; }
+  // EOTN: "Event of the Night" banner (WatchUFC Live channel 5)
+  function eotnNext() { var L = window.EOTN_EVENTS || [], t = Date.now() / 1000; for (var i = 0; i < L.length; i++) if (t < L[i][0] + L[i][3]) return L[i]; return null; }
+  function eotnText(e) {
+    var t = Date.now() / 1000, live = t >= e[0], day = "", tm = "9:00 PM ET";
+    try {
+      var f = function (x) { return new Date(x * 1000).toLocaleDateString("en-US", { timeZone: "America/New_York" }); };
+      tm = new Date(e[0] * 1000).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) + " ET";
+      day = f(e[0]) === f(t) ? "Tonight" : f(e[0]) === f(t + 86400) ? "Tomorrow" : new Date(e[0] * 1000).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" });
+    } catch (x) {}
+    return { live: live, when: live ? "\u25cf Live now" : day + " \u00b7 " + tm,
+      sub: live ? "On the air now on WatchUFC Live. Jump in where everyone else is." : day + " at " + tm + " on WatchUFC Live. One event, one night, everyone watching together.",
+      btn: live ? "Watch Live" : "Tune In" };
+  }
+  function eotnCard() {
+    var e = eotnNext(); if (!e) return "";
+    var x = eotnText(e), mr = "https://i.ytimg.com/vi/" + e[1] + "/maxresdefault.jpg", hq = "https://i.ytimg.com/vi/" + e[1] + "/hqdefault.jpg";
+    return '<button class="eotn' + (x.live ? " is-live" : "") + '" type="button" data-eotn="1" id="eotn-card"><img src="' + mr + '" onerror="this.onerror=null;this.src=\'' + hq + '\'" alt="" />' +
+      '<span class="eotn__in"><small>Event of the Night</small><strong>' + esc(e[2]) + '</strong><em data-eo="when">' + esc(x.when) + '</em><span data-eo="sub">' + esc(x.sub) + '</span><b data-eo="btn">' + PLAY + " " + x.btn + "</b></span></button>";
+  }
+  setInterval(function () { var c = doc.getElementById("eotn-card"), e = eotnNext(); if (!c) return; if (!e) { c.remove(); return; } var x = eotnText(e); c.classList.toggle("is-live", x.live); c.querySelector('[data-eo="when"]').textContent = x.when; c.querySelector('[data-eo="sub"]').textContent = x.sub; c.querySelector('[data-eo="btn"]').innerHTML = PLAY + " " + x.btn; }, 30000);
+  doc.addEventListener("click", function (ev) { var b = ev.target.closest && ev.target.closest("[data-eotn]"); if (!b) return; ev.preventDefault(); ev.stopImmediatePropagation(); if (window.__lvOpen) window.__lvOpen("eotn"); else { try { localStorage.setItem("live_ch_ufc", "eotn"); } catch (x) {} var lb = doc.getElementById("live-btn"); if (lb) lb.click(); } }, true);
   function homeView() {
     var h = "", ln = latestEvent(), fe = byType.E, nEv = E.filter(function (e) { return e.v.length; }).length;
     var feat = ln ? '<button class="feat" type="button" data-ev="' + ln.i + '"><small>' + (HUB.numbered ? "Latest numbered event" : "Latest event") + "</small><strong>" + esc(ln.n) + "</strong><span>" + esc(fdate(ln.d) + (ln.loc ? " · " + ln.loc : "") + " · " + plural(ln.v.length, "video")) + "</span></button>" : "";
@@ -667,6 +700,7 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
       '<div class="stats"><span class="stat"><b>' + n(V.length) + "</b> videos</span><span class=\"stat\"><b>" + n(byType.F.length) + "</b> " + (HUB.ff || "full fights").toLowerCase() + "</span><span class=\"stat\"><b>" + n(nEv) + "</b> events</span><span class=\"stat\">" + rangeStat() + "</span></div>" +
       feat + '<div class="btns">' + (ln ? '<button class="btn btn--red" type="button" data-play-ev="' + ln.i + '">' + PLAY + " Watch " + esc(ln.num ? HUB.numP + " " + ln.num : evShort(ln).a) + "</button>" : "") +
       '<a class="btn btn--ghost" href="#events">' + (HUB.numbered ? "Browse events" : "Browse seasons") + "</a></div></div></div>";
+    h += eotnCard();
     h += promoBar();
     h += cwRow();
     h += sec("Latest", rail(V.slice(0, 20)), "#t/all");
@@ -942,7 +976,7 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
   window.UFC_TOTAL = { videos: CACHE.ufc.V.length, events: CACHE.ufc.E.length };
 })();
 </script>
-<script>window.LIVE_CFG={"site": "ufc", "brand": "WatchUFC Live", "pitch": "4 live UFC channels (Free Fights, Full Events, Press Row and Embedded)", "data": "ufc_live.json", "ver": 1794864833, "channels": [{"id": "fights", "name": "Free Fights 24/7", "color": "#d20a0a", "logo": "icon-192.png"}, {"id": "events", "name": "Full Events", "color": "#d4a843", "logo": "icon-192.png"}, {"id": "press", "name": "Press Row", "color": "#ffffff", "logo": "icon-192.png"}, {"id": "embedded", "name": "Embedded", "color": "#ff6b2a", "logo": "icon-192.png"}]};</script>
+<script>window.LIVE_CFG={"site": "ufc", "brand": "WatchUFC Live", "pitch": "5 live channels (Free Fights, Full Events, Press Row, Embedded and Event of the Night)", "data": "ufc_live.json", "ver": 1794864833, "channels": [{"id": "fights", "name": "Free Fights 24/7", "color": "#d20a0a", "logo": "icon-192.png"}, {"id": "events", "name": "Full Events", "color": "#d4a843", "logo": "icon-192.png"}, {"id": "press", "name": "Press Row", "color": "#ffffff", "logo": "icon-192.png"}, {"id": "embedded", "name": "Embedded", "color": "#ff6b2a", "logo": "icon-192.png"}, {"id": "eotn", "name": "Event of the Night", "color": "#e8c35a", "logo": "icon-192.png", "events": [[1794967200, "tI-WbwoRY5I", "PRIDE FC 19: Bad Blood", 12509]]}]};</script>
 <script>/* LIVE channels for members. Shared account with Blockbuster+ (same origin, same Supabase session). */
 (function () {
   "use strict";
