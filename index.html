@@ -10,8 +10,10 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="theme-color" content="#070707" />
-<link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=2" />
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3" />
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=3" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3" />
+<link rel="manifest" href="manifest.webmanifest?v=3" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://i.ytimg.com" crossorigin />
@@ -154,13 +156,12 @@ main{display:block}
 body .lv-btn{display:none!important}
 
 /* ===== multi-promotion: header, switcher, seasons ===== */
-.brand img{width:42px;height:42px;border-radius:0;box-shadow:none;object-fit:contain}
+.brand img.brand__logo{width:auto;height:32px;max-width:52vw;border-radius:0;box-shadow:none;object-fit:contain}@media(min-width:720px){.brand img.brand__logo{height:38px}}
 .hubtag{display:flex;align-items:center;flex:none;height:34px;padding:0 9px;margin-right:auto;border-radius:9px;border:1px solid var(--line);background:#ffffff0d}
 .hubtag img{height:20px;width:auto;max-width:96px;object-fit:contain}
 .hub-bellator .hubtag img{height:14px;max-width:110px}.hub-invicta .hubtag img{height:26px}
 .brand{margin-right:0;min-width:0}.top__row .hubtag[hidden]+*{margin-left:auto}
-body:not(.hub-ufc) .brand .wm{font-size:19px}
-@media(max-width:430px){body:not(.hub-ufc) .brand .wm{display:none}}
+@media(max-width:430px){body:not(.hub-ufc) .brand img.brand__logo{height:22px;max-width:34vw}}
 .hl{color:var(--gold2)}
 .chip,.more,.back,.season,.yr,.promo,.hubtag,.btn{text-decoration:none}
 .hero__logo{height:clamp(44px,11vw,72px);width:auto;max-width:72vw;object-fit:contain;justify-self:start;filter:drop-shadow(0 6px 22px #000)}
@@ -323,7 +324,7 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
 <div class="app" id="top">
   <header class="top">
     <div class="top__row">
-      <a class="brand" href="#home" data-hub="ufc" aria-label="WatchUFC home"><img src="logo-header.png" alt="" width="42" height="42" /><span class="wm">Watch<b>UFC</b></span></a><a class="hubtag" id="hubtag" href="#home" data-hub="x" hidden></a>
+      <a class="brand" href="#home" data-hub="ufc" aria-label="WatchUFC home"><img class="brand__logo" src="logo-header.png?v=3" alt="WatchUFC" width="172" height="32" /></a><a class="hubtag" id="hubtag" href="#home" data-hub="x" hidden></a>
       <button class="livebtn" id="live-btn" type="button" aria-label="Open WatchUFC Live channels"><i aria-hidden="true"></i>LIVE</button>
       <button class="ibtn" id="search-btn" type="button" aria-label="Search" aria-expanded="false" aria-controls="search-row"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button>
     </div>
@@ -997,7 +998,7 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
   window.UFC_TOTAL = { videos: CACHE.ufc.V.length, events: CACHE.ufc.E.length };
 })();
 </script>
-<script>window.LIVE_CFG={"site": "ufc", "brand": "WatchUFC Live", "pitch": "5 live channels (Free Fights, Full Events, Press Row, Embedded and Event of the Night)", "data": "ufc_live.json", "ver": 1794864833, "channels": [{"id": "fights", "name": "Free Fights 24/7", "color": "#d20a0a", "logo": "icon-192.png"}, {"id": "events", "name": "Full Events", "color": "#d4a843", "logo": "icon-192.png"}, {"id": "press", "name": "Press Row", "color": "#ffffff", "logo": "icon-192.png"}, {"id": "embedded", "name": "Embedded", "color": "#ff6b2a", "logo": "icon-192.png"}, {"id": "eotn", "name": "Event of the Night", "color": "#e8c35a", "logo": "icon-192.png", "events": [[1794967200, "tI-WbwoRY5I", "PRIDE FC 19: Bad Blood", 12509], [1795053600, "eZVFd6tu4VU", "Velasquez vs Dos Santos | Complete UFC Trilogy", 3489], [1795057089, "XZRpL-dL8zo", "Lashley, Shlemenko, Yamauchi STAR!! | Bellator 162 - Full Event", 2936], [1795140000, "gKypmk_mD6Y", "McGregor vs Diaz 2 | Full Event", 21694]]}]};</script>
+<script>window.LIVE_CFG={"site": "ufc", "brand": "WatchUFC Live", "pitch": "5 live channels (Free Fights, Full Events, Press Row, Embedded and Event of the Night)", "data": "ufc_live.json", "ver": 1794864833, "channels": [{"id": "fights", "name": "Free Fights 24/7", "color": "#d20a0a", "logo": "icon-192.png?v=3"}, {"id": "events", "name": "Full Events", "color": "#d4a843", "logo": "icon-192.png?v=3"}, {"id": "press", "name": "Press Row", "color": "#ffffff", "logo": "icon-192.png?v=3"}, {"id": "embedded", "name": "Embedded", "color": "#ff6b2a", "logo": "icon-192.png?v=3"}, {"id": "eotn", "name": "Event of the Night", "color": "#e8c35a", "logo": "icon-192.png?v=3", "events": [[1794967200, "tI-WbwoRY5I", "PRIDE FC 19: Bad Blood", 12509], [1795053600, "eZVFd6tu4VU", "Velasquez vs Dos Santos | Complete UFC Trilogy", 3489], [1795057089, "XZRpL-dL8zo", "Lashley, Shlemenko, Yamauchi STAR!! | Bellator 162 - Full Event", 2936], [1795140000, "gKypmk_mD6Y", "McGregor vs Diaz 2 | Full Event", 21694]]}]};</script>
 <script>/* LIVE channels for members. Shared account with Blockbuster+ (same origin, same Supabase session). */
 (function () {
   "use strict";
