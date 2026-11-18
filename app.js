@@ -330,6 +330,25 @@
     return '<button class="eotn' + (x.live ? " is-live" : "") + '" type="button" data-eotn="1" id="eotn-card"><img src="' + mr + '" onerror="this.onerror=null;this.src=\'' + hq + '\'" alt="" />' +
       '<span class="eotn__in"><small>Event of the Night</small><strong>' + esc(e[2]) + '</strong><em data-eo="when">' + esc(x.when) + '</em><span data-eo="sub">' + esc(x.sub) + '</span><b data-eo="btn">' + PLAY + " " + x.btn + "</b></span></button>";
   }
+  // EOTN:next, "Coming <weekday>" card: the first pick on the next distinct ET night after the one eotnCard shows
+  function eotnNextNight() {
+    var L = window.EOTN_EVENTS || [], c = eotnNext(); if (!c) return null;
+    try { var dk = function (x) { return new Date(x * 1000).toLocaleDateString("en-US", { timeZone: "America/New_York" }); }; for (var i = 0; i < L.length; i++) if (L[i][0] > c[0] && dk(L[i][0]) !== dk(c[0])) return L[i]; } catch (x) {}
+    return null;
+  }
+  function eotnNextCard() {
+    var e = eotnNextNight(); if (!e) return "";
+    var P = (window.EOTN_POSTER || {})[e[1]] || {}, t = Date.now() / 1000, wd = "", tm = "9:00 PM ET";
+    try {
+      wd = new Date(e[0] * 1000).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" });
+      if (e[0] - t > 6 * 86400) wd += " " + new Date(e[0] * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
+      tm = new Date(e[0] * 1000).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) + " ET";
+    } catch (x) {}
+    var ti = P.t || String(e[2]).replace(/\s+\u00b7\s+Part\s.*$/, ""), mr = "https://i.ytimg.com/vi/" + e[1] + "/maxresdefault.jpg", hq = "https://i.ytimg.com/vi/" + e[1] + "/hqdefault.jpg";
+    return '<button class="eotn eotn--next" type="button" data-eotn="1" id="eotn-next-card" data-eid="' + esc(e[1]) + '"><img src="' + mr + '" onerror="this.onerror=null;this.src=\'' + hq + '\'" onload="if(this.naturalWidth&&this.naturalWidth<=120){this.onload=null;this.src=\'' + hq + '\'}" alt="" />' +
+      '<span class="eotn__in"><small>Coming ' + esc(wd) + ' \u00b7 Event of the Night</small><strong>' + esc(ti) + '</strong><em>' + esc(wd + " \u00b7 " + tm) + '</em><span data-eo="sub">' + esc((P.s ? P.s + ". " : "") + wd + " at " + tm + " on WatchUFC Live, channel 5.") + '</span><b>' + PLAY + " Tune In</b></span></button>";
+  }
+  setInterval(function () { var c = doc.getElementById("eotn-next-card"), e = eotnNextNight(); if (c && (!e || e[1] !== c.dataset.eid)) c.remove(); }, 30000);
   setInterval(function () { var c = doc.getElementById("eotn-card"), e = eotnNext(); if (!c) return; if (!e) { c.remove(); return; } var x = eotnText(e); c.classList.toggle("is-live", x.live); c.querySelector('[data-eo="when"]').textContent = x.when; c.querySelector('[data-eo="sub"]').textContent = x.sub; c.querySelector('[data-eo="btn"]').innerHTML = PLAY + " " + x.btn; }, 30000);
   doc.addEventListener("click", function (ev) { var b = ev.target.closest && ev.target.closest("[data-eotn]"); if (!b) return; ev.preventDefault(); ev.stopImmediatePropagation(); if (window.__lvOpen) window.__lvOpen("eotn"); else { try { localStorage.setItem("live_ch_ufc", "eotn"); } catch (x) {} var lb = doc.getElementById("live-btn"); if (lb) lb.click(); } }, true);
   function homeView() {
@@ -343,6 +362,7 @@
       feat + '<div class="btns">' + (ln ? '<button class="btn btn--red" type="button" data-play-ev="' + ln.i + '">' + PLAY + " Watch " + esc(ln.num ? HUB.numP + " " + ln.num : evShort(ln).a) + "</button>" : "") +
       '<a class="btn btn--ghost" href="#events">' + (HUB.numbered ? "Browse events" : "Browse seasons") + "</a></div></div></div>";
     h += eotnCard();
+    h += eotnNextCard();
     h += promoBar();
     h += cwRow();
     h += sec("Latest", rail(V.slice(0, 20)), "#t/all");

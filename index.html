@@ -172,6 +172,7 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
 .eotn strong{font:400 clamp(28px,7vw,48px)/.95 var(--disp);text-transform:uppercase;letter-spacing:.01em;text-shadow:0 4px 20px #000}
 .eotn em{font:800 15px/1 var(--cond);font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--red);align-self:flex-start;padding:6px 9px;border-radius:4px}
 .eotn.is-live em{animation:pulse 1.4s infinite}
+.eotn--next{min-height:170px;margin-top:10px;border-color:rgba(255,255,255,.22)}.eotn--next em{background:#2a2a2a;color:#e8c35a}
 .eotn span[data-eo="sub"]{color:#ffffffd0;font-size:14px;line-height:1.35}
 .eotn b{align-self:flex-start;margin-top:4px;display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 18px;border-radius:999px;background:#e8c35a;color:#000;font:800 15px/1 var(--cond);letter-spacing:.08em;text-transform:uppercase}
 .eotn b svg{width:14px;height:14px}
@@ -316,7 +317,7 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-<script>window.EOTN_EVENTS=[[1794967200, "tI-WbwoRY5I", "PRIDE FC 19: Bad Blood", 12509], [1795053600, "eZVFd6tu4VU", "Velasquez vs Dos Santos | Complete UFC Trilogy", 3489], [1795057089, "XZRpL-dL8zo", "Lashley, Shlemenko, Yamauchi STAR!! | Bellator 162 - Full Event", 2936], [1795140000, "gKypmk_mD6Y", "McGregor vs Diaz 2 | Full Event", 21694]];</script>
+<script>window.EOTN_EVENTS=[[1794967200, "tI-WbwoRY5I", "PRIDE FC 19: Bad Blood", 12509], [1795053600, "eZVFd6tu4VU", "Velasquez vs Dos Santos | Complete UFC Trilogy", 3489], [1795057089, "XZRpL-dL8zo", "Lashley, Shlemenko, Yamauchi STAR!! | Bellator 162 - Full Event", 2936], [1795140000, "gKypmk_mD6Y", "McGregor vs Diaz 2 | Full Event", 21694]];window.EOTN_POSTER={"eZVFd6tu4VU": {"t": "VELASQUEZ VS. DOS SANTOS", "s": "Complete trilogy, then Bellator 162"}, "gKypmk_mD6Y": {"t": "MCGREGOR VS. DIAZ 2", "s": "UFC 202 \u00b7 Full event"}};</script>
 </head>
 <body>
 <div class="app" id="top">
@@ -688,6 +689,25 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
     return '<button class="eotn' + (x.live ? " is-live" : "") + '" type="button" data-eotn="1" id="eotn-card"><img src="' + mr + '" onerror="this.onerror=null;this.src=\'' + hq + '\'" alt="" />' +
       '<span class="eotn__in"><small>Event of the Night</small><strong>' + esc(e[2]) + '</strong><em data-eo="when">' + esc(x.when) + '</em><span data-eo="sub">' + esc(x.sub) + '</span><b data-eo="btn">' + PLAY + " " + x.btn + "</b></span></button>";
   }
+  // EOTN:next, "Coming <weekday>" card: the first pick on the next distinct ET night after the one eotnCard shows
+  function eotnNextNight() {
+    var L = window.EOTN_EVENTS || [], c = eotnNext(); if (!c) return null;
+    try { var dk = function (x) { return new Date(x * 1000).toLocaleDateString("en-US", { timeZone: "America/New_York" }); }; for (var i = 0; i < L.length; i++) if (L[i][0] > c[0] && dk(L[i][0]) !== dk(c[0])) return L[i]; } catch (x) {}
+    return null;
+  }
+  function eotnNextCard() {
+    var e = eotnNextNight(); if (!e) return "";
+    var P = (window.EOTN_POSTER || {})[e[1]] || {}, t = Date.now() / 1000, wd = "", tm = "9:00 PM ET";
+    try {
+      wd = new Date(e[0] * 1000).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" });
+      if (e[0] - t > 6 * 86400) wd += " " + new Date(e[0] * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
+      tm = new Date(e[0] * 1000).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) + " ET";
+    } catch (x) {}
+    var ti = P.t || String(e[2]).replace(/\s+\u00b7\s+Part\s.*$/, ""), mr = "https://i.ytimg.com/vi/" + e[1] + "/maxresdefault.jpg", hq = "https://i.ytimg.com/vi/" + e[1] + "/hqdefault.jpg";
+    return '<button class="eotn eotn--next" type="button" data-eotn="1" id="eotn-next-card" data-eid="' + esc(e[1]) + '"><img src="' + mr + '" onerror="this.onerror=null;this.src=\'' + hq + '\'" onload="if(this.naturalWidth&&this.naturalWidth<=120){this.onload=null;this.src=\'' + hq + '\'}" alt="" />' +
+      '<span class="eotn__in"><small>Coming ' + esc(wd) + ' \u00b7 Event of the Night</small><strong>' + esc(ti) + '</strong><em>' + esc(wd + " \u00b7 " + tm) + '</em><span data-eo="sub">' + esc((P.s ? P.s + ". " : "") + wd + " at " + tm + " on WatchUFC Live, channel 5.") + '</span><b>' + PLAY + " Tune In</b></span></button>";
+  }
+  setInterval(function () { var c = doc.getElementById("eotn-next-card"), e = eotnNextNight(); if (c && (!e || e[1] !== c.dataset.eid)) c.remove(); }, 30000);
   setInterval(function () { var c = doc.getElementById("eotn-card"), e = eotnNext(); if (!c) return; if (!e) { c.remove(); return; } var x = eotnText(e); c.classList.toggle("is-live", x.live); c.querySelector('[data-eo="when"]').textContent = x.when; c.querySelector('[data-eo="sub"]').textContent = x.sub; c.querySelector('[data-eo="btn"]').innerHTML = PLAY + " " + x.btn; }, 30000);
   doc.addEventListener("click", function (ev) { var b = ev.target.closest && ev.target.closest("[data-eotn]"); if (!b) return; ev.preventDefault(); ev.stopImmediatePropagation(); if (window.__lvOpen) window.__lvOpen("eotn"); else { try { localStorage.setItem("live_ch_ufc", "eotn"); } catch (x) {} var lb = doc.getElementById("live-btn"); if (lb) lb.click(); } }, true);
   function homeView() {
@@ -701,6 +721,7 @@ body:not(.hub-ufc) .brand .wm{font-size:19px}
       feat + '<div class="btns">' + (ln ? '<button class="btn btn--red" type="button" data-play-ev="' + ln.i + '">' + PLAY + " Watch " + esc(ln.num ? HUB.numP + " " + ln.num : evShort(ln).a) + "</button>" : "") +
       '<a class="btn btn--ghost" href="#events">' + (HUB.numbered ? "Browse events" : "Browse seasons") + "</a></div></div></div>";
     h += eotnCard();
+    h += eotnNextCard();
     h += promoBar();
     h += cwRow();
     h += sec("Latest", rail(V.slice(0, 20)), "#t/all");
